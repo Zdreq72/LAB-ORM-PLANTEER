@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Messages from Users</h2>
+            <p class="text-muted mb-0">All messages sent through the contact form.</p>
+        </div>
+
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" value="{{ query }}" class="form-control"
+                placeholder="Search by name, email or message">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+        </form>
+    </div>
+
+    {% if messages_list %}
+    <div class="row gy-4">
+        {% for m in messages_list %}
+        <div class="col-md-6">
+            <div class="border rounded p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="me-2">😊</span>
+                    <div>
+                        <h6 class="mb-0">{{ m.first_name }} {{ m.last_name }}</h6>
+                        <a href="mailto:{{ m.email }}" class="small text-decoration-none">{{ m.email }}</a>
+                    </div>
+                </div>
+
+                <p class="small text-muted mb-2">{{ m.message }}</p>
+                <p class="text-muted small mb-0">
+                    Sent at: {{ m.created_at|date:"Y-m-d H:i" }}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No messages yet.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

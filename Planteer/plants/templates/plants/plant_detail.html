@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">{{ plant.name }}</h2>
+            <p class="text-muted mb-0">{{ plant.category }}</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a href="{% url 'plants:plant_update' plant_id=plant.id %}"
+                class="btn btn-outline-secondary btn-sm">Edit</a>
+
+            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                Delete
+            </button>
+        </div>
+    </div>
+
+    <div class="row gy-4">
+        <div class="col-lg-5">
+            {% if plant.image %}
+            <img src="{{ plant.image.url }}" class="img-fluid rounded" style="max-height:420px; object-fit:cover;">
+            {% else %}
+            <div class="d-flex align-items-center justify-content-center bg-light rounded" style="height:420px;">
+                <span class="text-muted">No image</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-7">
+            <p class="mb-2"><strong>Category:</strong> {{ plant.category }}</p>
+            <p class="mb-2"><strong>Native to:</strong> {{ native_to }}</p>
+
+            <p class="mb-2"><strong>Is edible:</strong>
+                {% if is_edible %}Yes{% else %}No{% endif %}
+            </p>
+
+            <p class="mb-2"><strong>Brief about plant:</strong></p>
+            <p class="text-muted">{{ plant.about }}</p>
+
+            <p class="mb-2"><strong>Used for:</strong></p>
+            <p class="text-muted">{{ used_for }}</p>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3 class="fw-bold mb-4">Related Plants</h3>
+
+        {% if related_plants %}
+        <div class="row gy-4">
+            {% for r in related_plants %}
+            <div class="col-md-4">
+                <a href="{% url 'plants:plant_detail' plant_id=r.id %}" style="text-decoration:none; color:inherit;">
+                    <div class="card border-0">
+                        {% if r.image %}
+                        <img src="{{ r.image.url }}" class="card-img-top rounded"
+                            style="height:200px; object-fit:cover;">
+                        {% else %}
+                        <div class="d-flex align-items-center justify-content-center bg-light rounded"
+                            style="height:200px;">
+                            <span class="text-muted">No image</span>
+                        </div>
+                        {% endif %}
+                        <div class="card-body px-0">
+                            <h6 class="fw-bold">{{ r.name }}</h6>
+                            <p class="text-muted mb-1">{{ r.category }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted">No related plants yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <h5 class="fw-bold mb-3">Delete Plant?</h5>
+                <p class="text-muted mb-4">Are you sure you want to delete <strong>{{ plant.name }}</strong>?</p>
+
+                <form method="post" action="{% url 'plants:plant_delete' plant_id=plant.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger px-4">Delete</button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

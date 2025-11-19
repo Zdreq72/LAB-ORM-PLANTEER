@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <h2 class="fw-bold mb-2">All Plants</h2>
+    <p class="text-muted mb-4">Browse and filter all plants in the database</p>
+
+    <form method="get" class="row g-2 align-items-end mb-4">
+        <div class="col-md-4">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select">
+                <option value="">All categories</option>
+                {% for category in categories %}
+                <option value="{{ category }}"{% if category == current_category %} selected{% endif %}>{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Is edible</label>
+            <select name="is_edible" class="form-select">
+                <option value="">All</option>
+                <option value="yes"{% if current_edible == "yes" %} selected{% endif %}>Edible</option>
+                <option value="no"{% if current_edible == "no" %} selected{% endif %}>Not edible</option>
+            </select>
+        </div>
+
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-dark w-50">Apply filters</button>
+            <a href="{% url 'plants:plant_list' %}" class="btn btn-outline-secondary w-50">Reset</a>
+        </div>
+    </form>
+
+    <div class="row gy-5 mt-2">
+        {% for plant in plants %}
+        <div class="col-md-4">
+            <div class="card border-0">
+                {% if plant.image %}
+                <img src="{{ plant.image.url }}" class="card-img-top rounded" style="height:240px; object-fit:cover;">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="height:240px;">
+                    <span class="text-muted">No image</span>
+                </div>
+                {% endif %}
+                <div class="card-body px-0">
+                    <h6 class="fw-bold mb-1">
+                        <a href="{% url 'plants:plant_detail' plant.id %}" class="text-decoration-none text-dark">
+                            {{ plant.name }}
+                        </a>
+                    </h6>
+                    <p class="text-muted mb-1">{{ plant.category }}</p>
+                    <p class="mb-0 small text-muted">
+                        Created at: {{ plant.created_at|date:"Y-m-d H:i" }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">No plants found.</p>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
