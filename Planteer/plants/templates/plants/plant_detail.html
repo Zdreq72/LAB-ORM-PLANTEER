@@ -77,6 +77,38 @@
         {% else %}
         <p class="text-muted">No related plants yet.</p>
         {% endif %}
+
+        <h3 class="fw-bold mt-5">Comments</h3>
+
+        {% if comments %}
+        {% for c in comments %}
+        <div class="border rounded p-3 mb-3">
+            <strong>{{ c.name }}</strong>
+            <p class="small text-muted mb-1">{{ c.created_at|date:"Y-m-d H:i" }}</p>
+            <p class="mb-0">{{ c.content }}</p>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted">No comments yet.</p>
+        {% endif %}
+        <h4 class="fw-bold mt-4">Add a comment</h4>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-2">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" class="form-control" required>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Comment</label>
+                <textarea name="content" class="form-control" rows="3" required></textarea>
+            </div>
+
+            <button class="btn btn-dark mt-2">Submit</button>
+        </form>
+
     </div>
 
 </div>

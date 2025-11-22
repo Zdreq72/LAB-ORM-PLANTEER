@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Contact, Plant
+from .models import Contact, Plant , Comment
 from django.db.models import Q
 
 def get_plant_or_none(plant_id):
@@ -44,9 +44,23 @@ def plant_detail(request, plant_id):
     if plant is None:
         return render(request, "plants/not_found.html", status=404)
 
+    if request.method == "POST":
+        name = request.POST.get("name")
+        content = request.POST.get("content")
+
+        if name and content:
+            Comment.objects.create(
+                plant=plant,
+                name=name,
+                content=content
+            )
+            return redirect("plants:plant_detail", plant_id=plant.id)
+
     related_plants = Plant.objects.filter(
         category=plant.category
     ).exclude(id=plant.id)[:3]
+
+    comments = plant.comments.all().order_by('-created_at')
 
     context = {
         "plant": plant,
@@ -54,7 +68,9 @@ def plant_detail(request, plant_id):
         "native_to": getattr(plant, "native_to", "Not specified"),
         "is_edible": plant.is_edible,
         "used_for": plant.used_for,
+        "comments": comments
     }
+
     return render(request, "plants/plant_detail.html", context)
 
 
