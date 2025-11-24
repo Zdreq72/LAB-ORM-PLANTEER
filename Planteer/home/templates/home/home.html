@@ -31,20 +31,15 @@
     <a href="{% url 'plants:plant_list' %}" class="more-link">More →</a>
   </div>
 
-  <div class="plants-grid">
+  <div class="row gy-4">
     {% for plant in plants %}
-    <div class="plant-card">
-        {% if plant.image %}
-      <a href="{% url 'plants:plant_detail' plant.id %}"> <img src="{{ plant.image.url }}" alt=""></a>
-      {% endif %}
-      <div class="plant-card-body">
-        <h4>{{ plant.name }}</h4>
-        <p>Brief about plant</p>
-        <span>{{ plant.category }}</span>
-      </div>
-    </div>
+
+    {% include "plants/plant_card.html" %}
+
     {% empty %}
-    <p class="no-plants">No plants yet.</p>
+    <div class="col-12">
+      <p class="no-plants">No plants yet.</p>
+    </div>
     {% endfor %}
   </div>
 

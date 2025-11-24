@@ -91,25 +91,10 @@
 
     {% if related_plants %}
     <div class="row gy-4">
-        {% for r in related_plants %}
-        <div class="col-md-4">
-            <a href="{% url 'plants:plant_detail' plant_id=r.id %}" style="text-decoration:none; color:inherit;">
-                <div class="card border-0">
-                    {% if r.image %}
-                    <img src="{{ r.image.url }}" class="card-img-top rounded" style="height:200px; object-fit:cover;">
-                    {% else %}
-                    <div class="d-flex align-items-center justify-content-center bg-light rounded"
-                        style="height:200px;">
-                        <span class="text-muted">No image</span>
-                    </div>
-                    {% endif %}
-                    <div class="card-body px-0">
-                        <h6 class="fw-bold">{{ r.name }}</h6>
-                        <p class="text-muted mb-1">{{ r.category }}</p>
-                    </div>
-                </div>
-            </a>
-        </div>
+        {% for plant in related_plants %}
+
+        {% include "plants/plant_card.html" %}
+
         {% endfor %}
     </div>
     {% else %}
