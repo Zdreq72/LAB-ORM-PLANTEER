@@ -12,4 +12,5 @@ urlpatterns = [
     path("search/", views.plant_search, name="plant_search"),
     path("contact/", views.contact_view, name="contact"),
     path("contact/messages/", views.contact_messages_view, name="contact_messages"),
+    path("country/<int:country_id>/", views.plants_by_country, name="plants_by_country"),
 ]

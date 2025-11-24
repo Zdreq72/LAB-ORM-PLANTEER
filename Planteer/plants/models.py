@@ -1,5 +1,13 @@
 from django.db import models
 
+
+class Benefit(models.Model):
+    name = models.CharField(max_length=100, unique=True)  
+    description = models.TextField()         
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
 class Plant(models.Model):
 
     class CategoryChoices(models.TextChoices):
@@ -16,6 +24,8 @@ class Plant(models.Model):
     category = models.CharField(max_length=50, choices=CategoryChoices.choices)
     is_edible = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    benefits = models.ManyToManyField(Benefit, related_name="plants", blank=True)
+    native_to = models.ManyToManyField("Countries", related_name="plants", blank=True)
 
     def __str__(self):
         return self.name
@@ -40,3 +50,12 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.name}"
+    
+
+class Countries(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    flag = models.ImageField(upload_to="countries/")
+
+
+    def __str__(self):
+        return self.name

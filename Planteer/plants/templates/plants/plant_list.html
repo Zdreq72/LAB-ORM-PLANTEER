@@ -8,28 +8,45 @@
     <p class="text-muted mb-4">Browse and filter all plants in the database</p>
 
     <form method="get" class="row g-2 align-items-end mb-4">
+
         <div class="col-md-4">
             <label class="form-label">Category</label>
             <select name="category" class="form-select">
                 <option value="">All categories</option>
                 {% for category in categories %}
-                <option value="{{ category }}"{% if category == current_category %} selected{% endif %}>{{ category }}</option>
+<option value="{{ category }}" {% if category == current_category %} selected {% endif %}>
+    {{ category }}
+</option>
+
                 {% endfor %}
             </select>
         </div>
 
         <div class="col-md-4">
-            <label class="form-label">Is edible</label>
-            <select name="is_edible" class="form-select">
-                <option value="">All</option>
-                <option value="yes"{% if current_edible == "yes" %} selected{% endif %}>Edible</option>
-                <option value="no"{% if current_edible == "no" %} selected{% endif %}>Not edible</option>
+            <label class="form-label">Country</label>
+            <select name="country" class="form-select">
+                <option value="">All countries</option>
+                {% for country in countries %}
+<option value="{{ country.id }}" {% if country.id|stringformat:"s" == current_country %} selected {% endif %}>
+    {{ country.name }}
+</option>
+
+                {% endfor %}
             </select>
         </div>
 
-        <div class="col-md-4 d-flex gap-2">
-            <button type="submit" class="btn btn-dark w-50">Apply filters</button>
-            <a href="{% url 'plants:plant_list' %}" class="btn btn-outline-secondary w-50">Reset</a>
+        <div class="col-md-2">
+            <label class="form-label">Is edible</label>
+            <select name="is_edible" class="form-select">
+                <option value="">All</option>
+                <option value="yes" {% if current_edible == "yes" %}selected{% endif %}>Edible</option>
+                <option value="no" {% if current_edible == "no" %}selected{% endif %}>Not edible</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-grid gap-2">
+            <button type="submit" class="btn btn-dark">Filter</button>
+            <a href="{% url 'plants:plant_list' %}" class="btn btn-outline-secondary">Reset</a>
         </div>
     </form>
 
@@ -58,7 +75,9 @@
             </div>
         </div>
         {% empty %}
-        <p class="text-muted">No plants found.</p>
+        <div class="col-12 text-center">
+            <p class="text-muted">No plants found matching your filters.</p>
+        </div>
         {% endfor %}
     </div>
 

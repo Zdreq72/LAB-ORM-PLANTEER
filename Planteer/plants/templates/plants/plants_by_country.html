@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        {% if country.flag %}
+        <img src="{{ country.flag.url }}" style="width: 60px; height: 40px; object-fit: cover; border: 1px solid #ddd;"
+            class="rounded">
+        {% else %}
+        <span class="fs-1">🏳️</span>
+        {% endif %}
+
+        <div>
+            <h2 class="fw-bold mb-0">Plants Native to {{ country.name }}</h2>
+            <p class="text-muted mb-0">Found {{ plants.count }} plants.</p>
+        </div>
+    </div>
+
+    <div class="row gy-4">
+        {% for plant in plants %}
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100">
+                {% if plant.image %}
+                <img src="{{ plant.image.url }}" class="card-img-top" style="height:240px; object-fit:cover;">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center bg-light" style="height:240px;">
+                    <span class="text-muted">No image</span>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="fw-bold">
+                        <a href="{% url 'plants:plant_detail' plant_id=plant.id %}"
+                            class="text-decoration-none text-dark">
+                            {{ plant.name }}
+                        </a>
+                    </h5>
+                    <span class="badge bg-success bg-opacity-10 text-success">{{ plant.category }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <h4 class="text-muted">No plants listed for this country yet.</h4>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

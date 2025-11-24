@@ -33,7 +33,6 @@
 
         <div class="col-lg-7">
             <p class="mb-2"><strong>Category:</strong> {{ plant.category }}</p>
-            <p class="mb-2"><strong>Native to:</strong> {{ native_to }}</p>
 
             <p class="mb-2"><strong>Is edible:</strong>
                 {% if is_edible %}Yes{% else %}No{% endif %}
@@ -41,75 +40,114 @@
 
             <p class="mb-2"><strong>Brief about plant:</strong></p>
             <p class="text-muted">{{ plant.about }}</p>
+            <p class="mb-2"><strong>Native to:</strong></p>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                {% for country in plant.native_to.all %}
 
-            <p class="mb-2"><strong>Used for:</strong></p>
-            <p class="text-muted">{{ used_for }}</p>
-        </div>
-    </div>
-
-    <div class="mt-5">
-        <h3 class="fw-bold mb-4">Related Plants</h3>
-
-        {% if related_plants %}
-        <div class="row gy-4">
-            {% for r in related_plants %}
-            <div class="col-md-4">
-                <a href="{% url 'plants:plant_detail' plant_id=r.id %}" style="text-decoration:none; color:inherit;">
-                    <div class="card border-0">
-                        {% if r.image %}
-                        <img src="{{ r.image.url }}" class="card-img-top rounded"
-                            style="height:200px; object-fit:cover;">
-                        {% else %}
-                        <div class="d-flex align-items-center justify-content-center bg-light rounded"
-                            style="height:200px;">
-                            <span class="text-muted">No image</span>
-                        </div>
+                <a href="{% url 'plants:plants_by_country' country_id=country.id %}" class="text-decoration-none">
+                    <div class="d-flex align-items-center border rounded px-2 py-1 bg-white"
+                        style="border-color: #eee;">
+                        {% if country.flag %}
+                        <img src="{{ country.flag.url }}" class="rounded-circle me-2"
+                            style="width: 24px; height: 24px; object-fit: cover;">
                         {% endif %}
-                        <div class="card-body px-0">
-                            <h6 class="fw-bold">{{ r.name }}</h6>
-                            <p class="text-muted mb-1">{{ r.category }}</p>
-                        </div>
+                        <span class="text-dark small fw-semibold">{{ country.name }}</span>
                     </div>
                 </a>
+
+                {% empty %}
+                <span class="text-muted">Not specified</span>
+                {% endfor %}
             </div>
-            {% endfor %}
+            <h4 class="fw-bold text-success">Plant Benefits 🌿</h4>
+
+            {% if plant.benefits.exists %}
+            <div class="row g-3 mt-1">
+                {% for benefit in plant.benefits.all %}
+                <div class="col-md-4">
+                    <div class="card border-success border-opacity-25 h-100 bg-light">
+                        <div class="card-body p-3">
+                            <h6 class="fw-bold text-success mb-1">
+                                <i class="bi bi-check-circle-fill me-1"></i> {{ benefit.name }}
+                            </h6>
+                            <p class="small text-muted mb-0">{{ benefit.description }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-muted small">No specific benefits listed for this plant.</p>
+            {% endif %}
         </div>
-        {% else %}
-        <p class="text-muted">No related plants yet.</p>
-        {% endif %}
 
-        <h3 class="fw-bold mt-5">Comments</h3>
+        <p class="mb-2"><strong>Used for:</strong></p>
+        <p class="text-muted">{{ used_for }}</p>
+    </div>
+</div>
 
-        {% if comments %}
-        {% for c in comments %}
-        <div class="border rounded p-3 mb-3">
-            <strong>{{ c.name }}</strong>
-            <p class="small text-muted mb-1">{{ c.created_at|date:"Y-m-d H:i" }}</p>
-            <p class="mb-0">{{ c.content }}</p>
+<div class="mt-5">
+    <h3 class="fw-bold mb-4">Related Plants</h3>
+
+    {% if related_plants %}
+    <div class="row gy-4">
+        {% for r in related_plants %}
+        <div class="col-md-4">
+            <a href="{% url 'plants:plant_detail' plant_id=r.id %}" style="text-decoration:none; color:inherit;">
+                <div class="card border-0">
+                    {% if r.image %}
+                    <img src="{{ r.image.url }}" class="card-img-top rounded" style="height:200px; object-fit:cover;">
+                    {% else %}
+                    <div class="d-flex align-items-center justify-content-center bg-light rounded"
+                        style="height:200px;">
+                        <span class="text-muted">No image</span>
+                    </div>
+                    {% endif %}
+                    <div class="card-body px-0">
+                        <h6 class="fw-bold">{{ r.name }}</h6>
+                        <p class="text-muted mb-1">{{ r.category }}</p>
+                    </div>
+                </div>
+            </a>
         </div>
         {% endfor %}
-        {% else %}
-        <p class="text-muted">No comments yet.</p>
-        {% endif %}
-        <h4 class="fw-bold mt-4">Add a comment</h4>
-
-        <form method="post">
-            {% csrf_token %}
-
-            <div class="mb-2">
-                <label class="form-label">Name</label>
-                <input type="text" name="name" class="form-control" required>
-            </div>
-
-            <div class="mb-2">
-                <label class="form-label">Comment</label>
-                <textarea name="content" class="form-control" rows="3" required></textarea>
-            </div>
-
-            <button class="btn btn-dark mt-2">Submit</button>
-        </form>
-
     </div>
+    {% else %}
+    <p class="text-muted">No related plants yet.</p>
+    {% endif %}
+
+    <h3 class="fw-bold mt-5">Comments</h3>
+
+    {% if comments %}
+    {% for c in comments %}
+    <div class="border rounded p-3 mb-3">
+        <strong>{{ c.name }}</strong>
+        <p class="small text-muted mb-1">{{ c.created_at|date:"Y-m-d H:i" }}</p>
+        <p class="mb-0">{{ c.content }}</p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-muted">No comments yet.</p>
+    {% endif %}
+    <h4 class="fw-bold mt-4">Add a comment</h4>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-2">
+            <label class="form-label">Name</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+
+        <div class="mb-2">
+            <label class="form-label">Comment</label>
+            <textarea name="content" class="form-control" rows="3" required></textarea>
+        </div>
+
+        <button class="btn btn-dark mt-2">Submit</button>
+    </form>
+
+</div>
 
 </div>
 

@@ -2,6 +2,10 @@
 {% load static %}
 
 {% block content %}
+
+<link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@2.0.1/dist/css/multi-select-tag.css">
+
 <div class="container mt-5" style="max-width: 700px;">
 
     <h3 class="fw-bold mb-4">
@@ -25,7 +29,54 @@
         <label class="form-label fw-semibold">Category</label>
         <input type="text" name="category" class="form-control mb-3" value="{{ plant.category|default:'' }}" required>
 
-        <label class="form-label fw-semibold">Is Edible?</label>
+        <label class="form-label fw-semibold">Benefits</label>
+        <select name="benefits" id="benefits" multiple>
+            {% for benefit in benefits %}
+            <option value="{{ benefit.id }}" {% if plant and benefit in plant.benefits.all %}selected{% endif %}>
+                {{ benefit.name }}
+            </option>
+            {% endfor %}
+        </select>
+
+
+        <div class="card p-3 mb-3 bg-light border-0">
+            <label class="form-label fw-bold small text-secondary">Or Add New Benefit:</label>
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <input type="text" name="new_benefit_name" class="form-control form-control-sm"
+                        placeholder="Name (e.g. Vitamin C)">
+                </div>
+                <div class="col-md-7">
+                    <input type="text" name="new_benefit_desc" class="form-control form-control-sm"
+                        placeholder="Description (Optional)">
+                </div>
+            </div>
+        </div>
+
+
+        <label class="form-label fw-semibold">Native To</label>
+        <select name="native_to" id="native_to" multiple>
+            {% for country in countries %}
+            <option value="{{ country.id }}" {% if plant and country in plant.native_to.all %}selected{% endif %}>
+                {{ country.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <div class="card p-3 mb-3 bg-light border-0">
+            <label class="form-label fw-bold small text-secondary">Or Add New Country:</label>
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <input type="text" name="new_country_name" class="form-control form-control-sm"
+                        placeholder="Country Name (e.g. Brazil)">
+                </div>
+                <div class="col-md-7">
+                    <input type="file" name="new_country_flag" class="form-control form-control-sm" accept="image/*">
+                    <div class="form-text text-muted" style="font-size: 11px;">Upload Country Flag (Optional)</div>
+                </div>
+            </div>
+        </div>
+
+        <label class="form-label fw-semibold mt-3">Is Edible?</label>
         <input type="checkbox" name="is_edible" {% if plant.is_edible %} checked {% endif %} class="mb-3">
 
         <label class="form-label fw-semibold">Image</label>
@@ -38,4 +89,30 @@
     </form>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@2.0.1/dist/js/multi-select-tag.js"></script>
+<script>
+    new MultiSelectTag('benefits', {
+        rounded: true,
+        shadow: true,
+        placeholder: 'Search benefits...',
+        tagColor: {
+            textColor: '#327b2c',
+            borderColor: '#92c88d',
+            bgColor: '#e8f0fe',
+        }
+    });
+
+    new MultiSelectTag('native_to', {
+        rounded: true,
+        shadow: true,
+        placeholder: 'Search countries...',
+        tagColor: {
+            textColor: '#327b2c',
+            borderColor: '#92c88d',
+            bgColor: '#e8f0fe',
+        }
+    });
+</script>
+
 {% endblock %}

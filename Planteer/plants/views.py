@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Contact, Plant , Comment
+from .models import Benefit, Contact, Plant , Comment , Countries
 from django.db.models import Q
 
 def get_plant_or_none(plant_id):
@@ -10,10 +10,14 @@ def get_plant_or_none(plant_id):
 
 
 def plant_list(request):
-    plants = Plant.objects.all()
+    plants = Plant.objects.all().order_by("-created_at")
 
     current_category = request.GET.get("category", "")
     current_edible = request.GET.get("is_edible", "")
+    current_country = request.GET.get("country", "")
+
+    if current_country: 
+        plants = plants.filter(native_to__id=current_country)
 
     if current_category:
         plants = plants.filter(category=current_category)
@@ -23,20 +27,18 @@ def plant_list(request):
     elif current_edible == "no":
         plants = plants.filter(is_edible=False)
 
-    categories = (
-        Plant.objects.order_by("category")
-        .values_list("category", flat=True)
-        .distinct()
-    )
+    categories = Plant.objects.values_list("category", flat=True).distinct()
+    countries = Countries.objects.all() 
 
     context = {
         "plants": plants,
         "categories": categories,
+        "countries": countries, 
         "current_category": current_category,
         "current_edible": current_edible,
+        "current_country": current_country,
     }
     return render(request, "plants/plant_list.html", context)
-
 
 
 def plant_detail(request, plant_id):
@@ -74,36 +76,64 @@ def plant_detail(request, plant_id):
     return render(request, "plants/plant_detail.html", context)
 
 
-
-
 def plant_create(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        about = request.POST.get("about")
-        used_for = request.POST.get("used_for")
-        category = request.POST.get("category")
-        is_edible = request.POST.get("is_edible") == "on"
-        image = request.FILES.get("image")
+    all_benefits = Benefit.objects.all()
+    all_countries = Countries.objects.all() 
 
-        Plant.objects.create(
-            name=name,
-            about=about,
-            used_for=used_for,
-            category=category,
-            is_edible=is_edible,
-            image=image
+    if request.method == "POST":
+        new_plant = Plant.objects.create(
+            name=request.POST.get("name"),
+            about=request.POST.get("about"),
+            used_for=request.POST.get("used_for"),
+            category=request.POST.get("category"),
+            is_edible=request.POST.get("is_edible") == "on",
+            image=request.FILES.get("image")
         )
+
+        selected_benefits = request.POST.getlist("benefits")
+        new_plant.benefits.set(selected_benefits)
+        
+        new_benefit_name = request.POST.get("new_benefit_name")
+        new_benefit_desc = request.POST.get("new_benefit_desc")
+        
+        if new_benefit_name:   
+            benefit_obj = Benefit.objects.create(
+                name=new_benefit_name, 
+                description=new_benefit_desc or "" 
+            )
+            new_plant.benefits.add(benefit_obj)
+        
+        selected_countries = request.POST.getlist("native_to") 
+        new_plant.native_to.set(selected_countries)    
+
+        new_country_name = request.POST.get("new_country_name")
+        new_country_flag = request.FILES.get("new_country_flag") 
+
+        if new_country_name:
+            country_obj, created = Countries.objects.get_or_create(name=new_country_name)
+            
+            if created and new_country_flag:
+                country_obj.flag = new_country_flag
+                country_obj.save()
+
+            new_plant.native_to.add(country_obj)
 
         return redirect("plants:plant_list")
 
-    return render(request, "plants/plant_form.html")
+    context = {
+        "benefits": all_benefits,
+        "countries": all_countries
+    }
+    return render(request, "plants/plant_form.html", context)
 
 
 def plant_update(request, plant_id):
     plant = get_plant_or_none(plant_id)
-
     if plant is None:
         return render(request, "plants/not_found.html")
+
+    all_benefits = Benefit.objects.all()
+    all_countries = Countries.objects.all() 
 
     if request.method == "POST":
         plant.name = request.POST.get("name")
@@ -116,9 +146,43 @@ def plant_update(request, plant_id):
             plant.image = request.FILES.get("image")
 
         plant.save()
+
+        selected_benefits = request.POST.getlist("benefits")
+        plant.benefits.set(selected_benefits)
+
+        new_benefit_name = request.POST.get("new_benefit_name")
+        new_benefit_desc = request.POST.get("new_benefit_desc")
+
+        if new_benefit_name:
+            benefit_obj = Benefit.objects.create(
+                name=new_benefit_name, 
+                description=new_benefit_desc or ""
+            )
+            plant.benefits.add(benefit_obj)
+
+        selected_countries = request.POST.getlist("native_to")
+        plant.native_to.set(selected_countries)
+
+        new_country_name = request.POST.get("new_country_name")
+        new_country_flag = request.FILES.get("new_country_flag") 
+
+        if new_country_name:
+            country_obj, created = Countries.objects.get_or_create(name=new_country_name)
+            
+            if created and new_country_flag:
+                country_obj.flag = new_country_flag
+                country_obj.save()
+
+            plant.native_to.add(country_obj)
+
         return redirect("plants:plant_detail", plant_id=plant.id)
 
-    return render(request, "plants/plant_form.html", {"plant": plant})
+    context = {
+        "plant": plant, 
+        "benefits": all_benefits,
+        "countries": all_countries
+    }
+    return render(request, "plants/plant_form.html", context)
 
 
 def plant_delete(request, plant_id):
@@ -188,3 +252,18 @@ def contact_messages_view(request):
     }
     
     return render(request, "plants/contact_messages.html", context)
+
+
+def plants_by_country(request, country_id):
+    try:
+        country = Countries.objects.get(id=country_id)
+    except Countries.DoesNotExist:
+        return render(request, "plants/not_found.html")
+
+    plants = country.plants.all()
+    
+    context = {
+        "country": country,
+        "plants": plants
+    }
+    return render(request, "plants/plants_by_country.html", context)
