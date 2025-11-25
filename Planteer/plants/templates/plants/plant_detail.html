@@ -7,7 +7,19 @@
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
             <h2 class="fw-bold mb-1">{{ plant.name }}</h2>
-            <p class="text-muted mb-0">{{ plant.category }}</p>
+            <p class="text-muted mb-2">{{ plant.category }}</p>
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="text-warning fs-5">★</span>
+                <span class="fw-bold">
+                    {% if average_rating %}
+                    {{ average_rating|floatformat:1 }} / 5
+                    {% else %}
+                    No ratings yet
+                    {% endif %}
+                </span>
+                <span class="text-muted small">({{ comments.count }} reviews)</span>
+            </div>
         </div>
 
         <div class="d-flex gap-2">
@@ -40,10 +52,10 @@
 
             <p class="mb-2"><strong>Brief about plant:</strong></p>
             <p class="text-muted">{{ plant.about }}</p>
+
             <p class="mb-2"><strong>Native to:</strong></p>
             <div class="d-flex flex-wrap gap-2 mb-3">
                 {% for country in plant.native_to.all %}
-
                 <a href="{% url 'plants:plants_by_country' country_id=country.id %}" class="text-decoration-none">
                     <div class="d-flex align-items-center border rounded px-2 py-1 bg-white"
                         style="border-color: #eee;">
@@ -54,13 +66,12 @@
                         <span class="text-dark small fw-semibold">{{ country.name }}</span>
                     </div>
                 </a>
-
                 {% empty %}
                 <span class="text-muted">Not specified</span>
                 {% endfor %}
             </div>
-            <h4 class="fw-bold text-success">Plant Benefits 🌿</h4>
 
+            <h4 class="fw-bold text-success">Plant Benefits 🌿</h4>
             {% if plant.benefits.exists %}
             <div class="row g-3 mt-1">
                 {% for benefit in plant.benefits.all %}
@@ -79,22 +90,20 @@
             {% else %}
             <p class="text-muted small">No specific benefits listed for this plant.</p>
             {% endif %}
-        </div>
 
-        <p class="mb-2"><strong>Used for:</strong></p>
-        <p class="text-muted">{{ used_for }}</p>
+            <p class="mb-2 mt-3"><strong>Used for:</strong></p>
+            <p class="text-muted">{{ used_for }}</p>
+        </div>
     </div>
 </div>
 
-<div class="mt-5">
+<div class="container mt-5">
     <h3 class="fw-bold mb-4">Related Plants</h3>
 
     {% if related_plants %}
     <div class="row gy-4">
         {% for plant in related_plants %}
-
         {% include "plants/plant_card.html" %}
-
         {% endfor %}
     </div>
     {% else %}
@@ -106,7 +115,14 @@
     {% if comments %}
     {% for c in comments %}
     <div class="border rounded p-3 mb-3">
-        <strong>{{ c.name }}</strong>
+        <div class="d-flex justify-content-between">
+            <strong>{{ c.name }}</strong>
+            <span class="text-warning small">
+                {% if c.rating > 0 %}
+                {{ c.rating }} ★
+                {% endif %}
+            </span>
+        </div>
         <p class="small text-muted mb-1">{{ c.created_at|date:"Y-m-d H:i" }}</p>
         <p class="mb-0">{{ c.content }}</p>
     </div>
@@ -114,6 +130,7 @@
     {% else %}
     <p class="text-muted">No comments yet.</p>
     {% endif %}
+
     <h4 class="fw-bold mt-4">Add a comment</h4>
 
     <form method="post">
@@ -129,10 +146,19 @@
             <textarea name="content" class="form-control" rows="3" required></textarea>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label fw-bold">Rating</label>
+            <select name="rating" class="form-select" style="width: 200px;">
+                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                <option value="3">⭐⭐⭐ (3/5)</option>
+                <option value="2">⭐⭐ (2/5)</option>
+                <option value="1">⭐ (1/5)</option>
+            </select>
+        </div>
+
         <button class="btn btn-dark mt-2">Submit</button>
     </form>
-
-</div>
 
 </div>
 

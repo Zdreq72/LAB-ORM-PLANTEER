@@ -1,6 +1,11 @@
 from django.shortcuts import render, redirect
 from .models import Benefit, Contact, Plant , Comment , Countries
-from django.db.models import Q
+from django.db.models import Q, Avg
+from django.core.mail import send_mail, EmailMessage
+from django.conf import settings
+from django.template.loader import render_to_string
+from django.contrib import messages
+
 
 def get_plant_or_none(plant_id):
     try:
@@ -46,15 +51,18 @@ def plant_detail(request, plant_id):
     if plant is None:
         return render(request, "plants/not_found.html", status=404)
 
+    # 1. جزئية حفظ التقييم (كانت ناقصة عندك)
     if request.method == "POST":
         name = request.POST.get("name")
         content = request.POST.get("content")
+        rating = request.POST.get("rating") # استلام التقييم
 
         if name and content:
             Comment.objects.create(
                 plant=plant,
                 name=name,
-                content=content
+                content=content,
+                rating=rating if rating else 0 # حفظ التقييم
             )
             return redirect("plants:plant_detail", plant_id=plant.id)
 
@@ -64,17 +72,20 @@ def plant_detail(request, plant_id):
 
     comments = plant.comments.all().order_by('-created_at')
 
+    # 2. جزئية حساب المتوسط (كانت ناقصة عندك)
+    avg = comments.aggregate(Avg("rating"))
+
     context = {
         "plant": plant,
         "related_plants": related_plants,
         "native_to": getattr(plant, "native_to", "Not specified"),
         "is_edible": plant.is_edible,
         "used_for": plant.used_for,
-        "comments": comments
+        "comments": comments,
+        "average_rating": avg["rating__avg"] # إرسال المتوسط للقالب
     }
 
     return render(request, "plants/plant_detail.html", context)
-
 
 def plant_create(request):
     all_benefits = Benefit.objects.all()
@@ -217,19 +228,38 @@ def plant_search(request):
 
 def contact_view(request):
     if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        email = request.POST.get("email")
-        message = request.POST.get("message")
-
-        Contact.objects.create(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            message=message,
+        contact = Contact(
+            first_name=request.POST.get("first_name"),
+            last_name=request.POST.get("last_name"),
+            email=request.POST.get("email"),
+            message=request.POST.get("message"),
         )
-        return redirect("home:home_page")
+        contact.save()
 
+
+        msg_html = render_to_string("plants/mail/contact_email.html", {
+            "first_name": contact.first_name,
+            "message": contact.message
+        })
+
+        email_message = EmailMessage(
+            "Planteer Contact Confirmation", 
+            msg_html,  
+            settings.EMAIL_HOST_USER,        
+            [contact.email],                 
+        )
+        
+        email_message.content_subtype = "html" 
+        
+        try:
+            email_message.send()
+            messages.success(request, "Your message has been sent successfully! Check your inbox." ,"alert-success")
+        except Exception as e:
+            print(f"Error sending email: {e}")
+
+
+         
+        
 
     return render(request, "plants/contact.html")
 

@@ -5,6 +5,20 @@
 <div class="container mt-5 mb-5">
     <div class="row g-5">
 
+        {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show"
+                role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        
+
         <div class="col-lg-6">
             <h2 class="fw-bold mb-2">Contact us</h2>
             <p class="text-muted mb-4">Subheading for description or instructions</p>
